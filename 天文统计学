@@ -1,0 +1,132 @@
+import matplotlib.pyplot as plt
+import numpy as np
+from astropy.io import fits
+from pylab import mpl
+mpl.rcParams['font.sans-serif'] = ['SimHei'] #SimHei是黑体的意思
+h111=fits.open('drC-006366-g4-0132.fits')
+#h111[0].header
+y=1623
+x=472
+dx=200
+dy=200
+image=h111[0].data[x-dx:x+dx,y-dy:y+dy]#x,y是反的，截取星系（349.625,18.689）图片
+
+noise=np.mean(image[0:50,350:400])
+image= image-noise#扣除背景
+
+plt.imshow(np.log10(image),origin='lower',vmax=np.log10(1300))#
+plt.colorbar()
+plt.show()
+center=np.argwhere(image == np.max(image[168:241,130:235]))  
+#寻找星系中心，x，y与DS9相反，(X=189，Y=206)in DS9
+def fluxForR(k,image,center,a):
+    #初始化
+    i=0
+    dy=0
+    dx=0
+    flux1=np.zeros(100)
+    flux2=np.zeros([10000,10000])
+    R=np.zeros(200)
+    centery=center[0]
+    centerx=center[1]
+    
+    for i in range(100):
+        if R[i-1]>400:break
+
+        if a=="+":#对中心以上一点取测光值（上下以ds9上大下小为准）
+            flux2[dy,dx]=image[centery+dy,centerx+dx]
+        if a=="-":
+            flux2[dy,dx]=image[centery-dy,centerx+dx]
+        
+        flux1[i]=flux2[dy,dx]
+        R[i]=np.sqrt(dx**2+dy**2)#计算该点距离中心的距离
+        dx+=1
+        dy=int(k*dx)#dx属于索引，索引是整数
+        
+    return flux1[0:i],R[0:i]
+    
+
+def SerI(F0,R,R0,n):
+    I=F0*np.exp(-(R/R0)**(1/n))#Parameters R should same as FLUX!
+    return I
+
+def x2(flux,Imodel):
+    a=(flux-Imodel)**2
+    b=flux#泊松噪声
+    return a/b
+
+def x2pdf(x2):
+    return np.exp(-x2/2)
+
+R0=np.arange(5,7,0.005)
+#R0,np.zeros(len(R0),int)
+pdfR0=np.zeros(len(R0))#初始化
+k=np.tan(np.deg2rad(56.63))
+for i in range(len(R0)):
+    flux1,r1=fluxForR(k,image,[206,189],"+")
+    I=SerI(flux1[0],r1,R0[i],1)#1：Parameters R should same as FLUX! 2：value（I0,R0,R,n) is gave
+    x=x2(flux1,I)
+    pi=x2pdf(x)
+    pdfpi=1#初始化
+    for j in range(len(pi)):
+        pdfpi*=pi[j] #每一个R值的p(R|R0)相乘
+        #print(j,"pi相乘",pdfpi)
+    pdfR0[i]=pdfpi#将第i个R0算出的pdfR0写入第i个位置
+   #print("不同R0的pdf",R0[i],pdfR0[i])
+#pdfR0
+
+p111=np.zeros((3,len(R0)))
+p111[0]=pdfR0#"put pdfR0 of line+ k=0 in [0]"
+#p111[0]
+
+pdfR0=np.zeros(len(R0))#初始化
+for i in range(len(R0)):
+    flux2,r2=fluxForR(k,image,[206,189],"-")
+    I=SerI(flux2[0],r2,R0[i],1)#1：Parameters R should same as FLUX! 2：value（I0,R0,R,n) is gave
+    x=x2(flux2,I)
+    pi=x2pdf(x)
+    pdfpi=1#初始化
+    for j in range(len(pi)):
+        pdfpi*=pi[j] #每一个R值的p(R|R0)相乘
+        #print(j,"pi相乘",pdfpi)
+    pdfR0[i]=pdfpi#将第i个R0算出的pdfR0写入第i个位置
+    #print("不同R0的pdf",R0[i],pdfR0[i])
+#pdfR0
+
+p111[1]=pdfR0#"put pdfR0 of line- k=10 in [1]"
+p=p111[0]*p111[1]#"posterior"
+
+fig = plt.figure(figsize=[15,5])
+ax = fig.add_subplot(121)
+e1, = ax.plot(r1,flux1,'k.')
+e2, = ax.plot(r1,I,'b-')
+plt.legend([e1,e2],['flux+','I(n=1)'],fontsize=12)
+ax.set_xlabel(r'R',fontsize=20)
+ax.set_ylabel('flux',fontsize=20)
+plt.title(u"上半长轴",fontsize=20)
+
+ax = fig.add_subplot(122)
+e1, = ax.plot(r2,flux2,'k.')
+e2, = ax.plot(r2,I,'b-')
+plt.legend([e1,e2],['flux-','I(n=1)'],fontsize=12)
+ax.set_xlabel(r'R',fontsize=20)
+ax.set_ylabel(r'flux',fontsize=20)
+plt.title(u"下半长轴",fontsize=20)
+fig.show()
+
+fig = plt.figure(figsize=[10,5])
+ax = fig.add_subplot(111)
+e1, = ax.plot(R0,p111[0]/np.sum(p111[0]),'b.-')#
+e2, = ax.plot(R0,p111[1]/np.sum(p111[1]),'r.-')#
+e3, = ax.plot(R0,p/np.sum(p),'k.-')#
+plt.legend([e1,e2,e3],['likelihood（上半长轴）,n=1','likelihood（下半长轴）,n=1','posterior of R0'],loc =2)
+ax.set_xlabel(r'R0',fontsize=20)
+ax.set_ylabel(r'P',fontsize=20)
+fig.show()
+
+
+a=R0[np.argwhere(p==np.max(p))]#最佳值
+a
+
+b=R0[np.argwhere((p/np.sum(p)>0.017)&(p/np.sum(p)<0.0174))]
+b
