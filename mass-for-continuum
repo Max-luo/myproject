@@ -1,0 +1,27 @@
+from numpy import exp
+from astropy import units as u
+from astropy import constants
+import numpy as  np
+# from dust_emissivity.blackbody import modified_blackbody,integrate_sed,blackbody
+from astropy.modeling import models
+
+h = constants.h.cgs.value   # Planck constant in CGS unit
+k = constants.k_B.cgs.value # Boltzmann constant in CGS unit
+c = constants.c.cgs.value # speed of light in CGS unit
+msol = 1.9891*10**33  #solar mass : g
+v=3.359E+11     # Hz
+t=25       # K
+#
+
+
+bb=models.BlackBody(temperature=t*u.K)    # black body function
+#print(bb(v * u.Hz))
+fluxb=bb(v*u.Hz)*1e23
+#fluxb
+kappav=0.0089*(v*1e-9/230)**1.5
+flux = 0.017967532767824097
+d_pc = 3000
+d = d_pc * 206265*1.496e13
+#mass
+mass = d**2*flux/fluxb/kappav / (msol)        # mass per solar mass
+print(mass)
