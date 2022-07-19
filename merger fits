@@ -1,0 +1,41 @@
+import aplpy
+import pylab as pl
+import regions
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
+import astropy.units as u
+from astropy.utils.data import download_file
+from astropy.io import fits  
+from astropy.utils import data
+from spectral_cube import SpectralCube
+from astroquery.esasky import ESASky
+from astroquery.utils import TableList
+from astropy.wcs import WCS
+from astropy import wcs
+from reproject import reproject_interp
+from spectral_cube import SpectralCube as sc
+
+hi1=fits.open('CO_b.fits')
+hi1[0].data
+a=hi1[0].data
+hi2=fits.open('CO_r.fits')[0]
+hi2.data
+b=hi2.data
+_w1 = wcs.WCS(hi2, naxis=2)
+
+
+fig=plt.figure(figsize=(5,3))
+ax=fig.add_subplot(111,projection=_w1)
+ax.set_xlabel('RA',font='serif',size=16)
+ax.set_ylabel('DEC',font='serif',size=16)
+im=ax.imshow(a,origin='lower',cmap='Blues_r')
+cbar=fig.colorbar(im)
+cbar.set_label('velocity (km/s)',font='serif',size=16)
+
+c=a+b
+zero2nan=np.where(c==0,np.nan,c)
+d=zero2nan
+
+hi22=fits.ImageHDU(data=d,header=hi1[0].header)
+hi22.writeto('co_out_test.fits')
