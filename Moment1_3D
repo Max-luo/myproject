@@ -1,0 +1,63 @@
+%matplotlib inline
+import numpy as np
+
+Ny,Nx = v.shape
+X = np.arange(Nx)
+Y = np.arange(Ny)
+XX,YY = np.meshgrid
+ax = plt.subplot(projection='3d')
+ax.plot_surface(XX,YY,v)
+
+data
+
+plt.figure(figsize=(6,6))
+Ny,Nx=data.shape
+X = np.arange(Nx)
+Y = np.arange(Ny)
+XX,YY = np.meshgrid(X,Y)
+ax=plt.subplot(projection='3d')
+data1 = data.copy()
+data1[(data<15) |(data>25)] = np.nan
+ax.plot3D(XX.flatten(),YY.flatten(),data1.flatten())
+
+data1 = data[400:900,400:900].copy()
+data1[data1<10] = np.nan
+
+Ny,Nx=data1.shape
+X = np.arange(Nx)
+Y = np.arange(Ny)
+XX,YY = np.meshgrid(X,Y)
+ax=plt.subplot(projection='3d')
+ax.plot3D(XX.flatten(),YY.flatten(),data1.flatten(),ls='None',marker='.',markersize=1)
+plt.xlabel('x')
+plt.ylabel('y')
+
+XX.flatten().shape
+
+Nk = 3
+k = np.ones((Nk,Nk))/Nk**2
+import astropy.convolution as conv
+data2 = conv.convolve(data1,k, nan_treatment='fill',fill_value=np.nan)
+ax=plt.subplot(projection='3d')
+
+data1 = data[400:900,400:900].copy()
+data1[data1>10] = np.nan
+
+Ny,Nx=data1.shape
+X = np.arange(Nx)
+Y = np.arange(Ny)
+XX,YY = np.meshgrid(X,Y)
+ax=plt.subplot(projection='3d')
+ax.plot3D(XX.flatten(),YY.flatten(),data1.flatten(),ls='None',marker='.',markersize=1)
+plt.xlabel('x')
+plt.ylabel('y')
+
+%matplotlib inline
+Nk = 3
+
+k = np.ones((Nk,Nk))/Nk**2
+import astropy.convolution as conv
+data2 = conv.convolve(data1,k, nan_treatment='fill',fill_value=np.nan)
+ax=plt.subplot(projection='3d')
+ax.plot_surface(XX,YY,data2)
+ax.plot_surface(XX,YY,data2)
