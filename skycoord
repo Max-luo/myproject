@@ -1,0 +1,10 @@
+from astropy import units as u
+from astropy.coordinates import SkyCoord
+
+c = SkyCoord('05:39:56.001 -07:30:27.57',unit=(u.hourangle,u.deg))
+d = SkyCoord('05:39:56.033 -07:30:27.96',unit=(u.hourangle,u.deg))
+sep = c.separation(d)
+
+or
+sep = 3.1415926/180/3600*arcsec*Distance(pc)*206265
+
