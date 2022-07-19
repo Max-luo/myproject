@@ -1,0 +1,30 @@
+import numpy as np
+import numpy as np
+bmaj=1.1242531E-04*3600 #arcsec
+bmin=9.6774728E-05*3600 #arcsec
+omega = (np.pi*bmaj*bmin)/(4*np.log(2))
+omega
+pixel_size= 0.06*0.06 #pixel increment
+beamarea = omega/pixel_size 
+
+system_velocity =
+velocity = v
+v = np.abs(velocity-system_velocity) #
+
+flux_density = intensity[i]*beamarea
+
+#outflow parameters
+
+velocity_b = np.abs(np.arange(4,-23,-2) - 10)   # 4- -22 km/s
+Mout_b = 1.39*10**(-6)*(np.exp(16.59/30))*(0.42**2)*30.92*np.array(flux_sum_b)
+P_b = Mout_b * velocity_b
+E_b = 0.5 * Mout_b * velocity_b**2
+print(Mout_b)
+print(P_b)
+print(E_b)
+
+### 1 kg (m/s)**2 convert 100000 (g cm)/s **2
+### Msun= 2e30 kg = 2e33g //
+### v**2 = 1km/s**2 = 1e10 cm/s**2 //
+### unit: erg(10**43)
+
