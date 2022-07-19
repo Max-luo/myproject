@@ -1,0 +1,44 @@
+from astrodendro import Dendrogram,pp_catalog
+from astropy.io import fits
+import numpy as np
+from astropy import units as u
+from astrodendro.scatter import Scatter
+from astropy import wcs
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
+
+array,header=fits.getdata('TM1+TM2+ACA_contour.fits',header=True)
+wcs=wcs.WCS(header)
+rms=0.00015
+# idm = np.where(array < rms*3) # bellow the noise level is set to zero.
+# array[idm] = np.nan
+d=Dendrogram.compute(array,min_value=3*rms,min_delta=1*rms,wcs=wcs)
+
+metadata={}
+metadata['data_unit']=u.Jy/u.beam
+metadata['spatial_scale']= 0.053*u.arcsec
+metadata['beam_major']=(9.144330190288E-05*u.degree).to(u.arcsec)
+metadata['beam_minor']=(7.986471884780E-05*u.degree).to(u.arcsec)
+
+cat=pp_catalog(d,metadata)
+cat.pprint(show_unit=True,max_lines=10)
+cat.savetxt('cat.txt')
+
+p=d.plotter()
+from astrodendro.analysis import PPStatistic
+
+fig = plt.figure()
+ax = fig.add_subplot(1, 1, 1)
+
+ax.imshow(array,cmap='gist_ncar_r',vmin=0.00045,vmax=0.016)
+for leaf in d.leaves:
+
+    p.plot_contour(ax, structure=1009, lw=3, colors='red')
+
+    s = PPStatistic(leaf)
+    ellipse = s.to_mpl_ellipse(edgecolor='orange', facecolor='none')
+
+    ax.add_patch(ellipse)
+
+plt.xlim(580,780)
+plt.ylim(600,720)
