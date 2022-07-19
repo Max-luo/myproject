@@ -1,0 +1,34 @@
+import regions
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
+import astropy.units as u
+from astropy.utils.data import download_file
+from astropy.io import fits  
+from astropy.utils import data
+from spectral_cube import SpectralCube
+from astroquery.esasky import ESASky
+from astroquery.utils import TableList
+from astropy.wcs import WCS
+from astropy import wcs
+from reproject import reproject_interp
+from spectral_cube import SpectralCube as sc
+
+fitsname = 'xx.fits'
+hi_data = fits.open(fitsname) [0] # Open the FITS file for reading
+cube = sc.read(hi_data,hdu=0)
+cube = cube.with_spectral_unit(u.km / u.s, velocity_convention='radio')
+
+cont_data = np.squeeze(hi_data.data)
+_data1 = np.squeeze(cont_data.data)
+_data1 = np.nan_to_num(_data1)
+_w1 = wcs.WCS(hi_data, naxis=2)
+#hi_data_cont2 = fits.ImageHDU(data=_data1, header=_w1.to_header())
+rms = np.std(_data[20,:,:])
+idm = np.where(_data < rms*3) # bellow the noise level is set to zero.
+_data[idm] = 0
+sub_cube = sc(data=_data, wcs=_w)
+sub_cube_slab = sub_cube.spectral_slab(0*u.km / u.s, 20 *u.km / u.s)
+
+moment_0 = sub_cube_slab.with_spectral_unit(u.km/u.s).moment(order=0)  # Zero-th moment
+moment_1 = sub_cube_slab.with_spectral_unit(u.km/u.s).moment(order=1)
