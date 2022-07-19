@@ -1,0 +1,33 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as mpl
+import aplpy
+
+aplpy.make_rgb_cube(['1-irac1.fits',
+           '2-irac2.fits',
+          '1-irac3.fits'],
+          'SEIP_cube.fits')
+          
+aplpy.make_rgb_image('SEIP_cube.fits','SEIP_rgb.png',stretch_r='linear',stretch_g='linear',stretch_b='linear')
+
+
+f=aplpy.FITSFigure('SEIP_rgb.png')
+f.recenter(86.123,9.148,radius=0.022)
+rms=13.8
+# level=[0.1*c,0.2*c,0.3*c,0.4*c,0.5*c,0.6*c,0.7*c,0.8*c,0.9*c,1*c]
+level=[5*rms,12*rms,18*rms,24*rms,30*rms]
+f.show_contour('SCUBA_contour.fits',colors='white',levels=level,linewidth=4)
+f.axis_labels.set_xtext( 'RA (J2000)')
+f.axis_labels.set_ytext( 'DEC (J2000)')
+f.axis_labels.set_font(size='xx-large',weight='normal',stretch='normal')
+f.show_rectangles(86.123,9.148,0.01,0.01,color='blue',alpha=0.8,zorder=5,linewidth=4)
+f.show_circles(86.123,9.148,0.021/2,0.021/2,color='yellow',linewidths=5,linestyles='dashdot')
+f.tick_labels.show()
+f.tick_labels.set_font(size='xx-large')
+f.add_scalebar(0.0035,'0.03 arcsec',color='white',corner='bottom')
+# f.scalebar.set_frame(True)
+f.scalebar.set_font(size='xx-large',family='sans-serif')
+f.scalebar.set_label('5000 au')
+f.show_rgb()
+
+f.save('rgb1.png',dpi=600)
